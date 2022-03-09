@@ -2,6 +2,8 @@ import pygame
 import sys
 import random
 from pygame.math import Vector2
+from mathgenerator import mathgen
+
 
 
 
@@ -11,7 +13,7 @@ class SNAKE:
 
     def __init__(self):
         self.body = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
-        self.direction = Vector2(1, 0)
+        self.direction = Vector2(0, 0)
         self.new_block = False
 
         self.head_up = pygame.image.load(
@@ -114,6 +116,12 @@ class SNAKE:
     def add_block(self):
         self.new_block = True
 
+    def reset(self):
+        self.body = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
+        self.direction = Vector2(0, 0)
+
+
+
 
 class FRUIT:
     def __init__(self):
@@ -131,19 +139,28 @@ class FRUIT:
 
 
 class MAIN:
+    
+
     def __init__(self):
         self.snake = SNAKE()
         self.fruit = FRUIT()
+        
 
     def update(self):
         self.snake.move_snake()
         self.check_collision()
         self.check_fail()
+        self.question_page()
+        
+    
+        
 
     def draw_elements(self):
         self.fruit.draw_fruit()
         self.snake.draw_snake()
         self.draw_score()
+        self.pause_ins()
+        
 
     def check_collision(self):
         if self.fruit.pos == self.snake.body[0]:
@@ -159,12 +176,11 @@ class MAIN:
                 self.game_over()
 
     def game_over(self):
-        pygame.quit()
-        sys.exit()
+        self.snake.reset()
 
     def draw_score(self):
         score_text = str(len(self.snake.body) - 3)
-        score_surface = game_font.render(score_text, True, (59, 74, 12))
+        score_surface = game_font.render(score_text, True, (0, 0, 0))
         score_x = int((cell_size*cell_number)-60)
         score_y = int((cell_size * cell_number)-70)
         score_rect = score_surface.get_rect(center=(score_x, score_y))
@@ -174,8 +190,55 @@ class MAIN:
         pygame.draw.rect(screen, (255, 127, 80), bg_rect, 2)
         screen.blit(score_surface, score_rect)
 
+    def pause_ins(self):
+        pause_instructions= " Use p to pause"
+        pause_surface= game_font.render(pause_instructions, True, (0, 0, 0))
+        pause_x=int((cell_size*cell_number)-770)
+        pause_y=int((cell_size * cell_number)-770)
+
+        screen.blit(pause_surface,(pause_x,pause_y))
+
+    def question_page(self):
+        score = len(self.snake.body)-3 
+        return score
+
+
+
+# class Math:
+#     def  __int__(self):
+#         self.generate_questions()
+  
+
+#     def generate_questions(self):
+#         x  = [23,10,26,50,7,110,62,40]
+#         lst = []
+#         for _ in range(100):
+#             for i in x:
+#                 question= mathgen.genById(i)
+#                 lst.append(question)
+#         return lst 
+
+#     def get_random_question(self):
+#         lst=self.generate_questions()
+#         random_question = random.choice(lst)
+#         return random_question
+
+#     def draw_question(self):
+#         question= self.get_random_question()[0]
+#         question_surface = game_font.render(question, True, (112,102,102))
+#         question_x =int((cell_size*cell_number/2 -250))
+#         question_y =int((cell_size*cell_number/2-100))
+#         screen.blit(question_surface,(question_x,question_y) )
+        
+
+  
 
 class Gamestate:
+ 
+
+
+    
+
     def __init__(self):
         self.state= "intro"
 
@@ -187,15 +250,17 @@ class Gamestate:
                 pygame.quit()
                 sys.exit()
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                self.state = "main_game"
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    self.state = "main_game"
           
 
-        welcome_text = game_font.render("Welcome to snake game Press the mouse to start", True, (112,102,102))
+        welcome_text = game_font.render("Welcome to snake game Press the Space bar  to start", True, (0,0,0))
         screen.fill((175, 215, 70))
         screen.blit(snake_png,(cell_size*cell_number/2 -250,cell_size*cell_number/2-250))
         screen.blit(welcome_text,(cell_size*cell_number/2 -350,cell_size*cell_number/2-290) )
         pygame.display.update()   
+     
 
 
     def main_game(self):
@@ -220,9 +285,100 @@ class Gamestate:
                     if main_game.snake.direction.x != -1:
                         main_game.snake.direction = Vector2(-1, 0)
 
+                if event.key == pygame.K_p:
+                    self.state ="pause"
+                
+                if main_game.question_page()>1 and main_game.question_page() % 5 == 0:
+                    self.state = "question_page"
+                    main_game.snake.add_block()
+
+
         screen.fill((175, 215, 70))
         main_game.draw_elements()
-        pygame.display.update()   
+
+        pygame.display.update()
+      
+
+         
+    def pause (self):
+
+        paused = True
+        while paused:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_c:
+                        paused = False
+                        self.state = "main_game"
+                    elif event.key == pygame.K_q:
+                        pygame.quit()
+                        quit()
+            
+            
+            screen.fill((175, 215, 70))
+            text= "Press C to continue and Q to quit"
+            text_render = game_font.render(text, True, (0,0,0))
+            screen.blit(text_render,(cell_size*cell_number/2 -250,cell_size*cell_number/2-100))
+            pygame.display.update() 
+
+
+    def math_page(self):
+        question1= "What is capital city of kenya "
+        answer1 = "nairobi"
+        
+        user_text = ''
+        x=[]
+        def string():
+            return "".join(x)
+        answering = True 
+        while answering:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+
+                if event.type == pygame.KEYDOWN:
+
+                    if event.key == pygame.K_RETURN:
+                        if str(x[-1])== answer:
+                            answering = False
+                            game_state.state = "main_game"
+
+                        else: 
+                            game_state.state = "main_game"
+                            answering = False
+                            main_game.game_over()
+                            
+                            
+                     
+                    else:
+                        user_text += event.unicode
+                        x.append(user_text)
+                        print(x)
+                            
+
+
+            
+            screen.fill((175, 215, 70))
+            #input field 
+            
+            text_surface = game_font.render(user_text ,True,(0,0,0))
+            screen.blit(text_surface,(300,300))
+            
+            #question to appear
+            question = question1
+            answer = answer1
+            question_surface = game_font.render(question, True, (112,102,102))
+            screen.blit(question_surface, (200,200))
+            pygame.display.update() 
+
+            
+                    
+
 
     def state_manger(self):
 
@@ -231,6 +387,11 @@ class Gamestate:
 
         if self.state == 'main_game':
             self.main_game()
+
+        if self.state == 'pause':
+            self.pause()
+        if self.state == 'question_page':
+            self.math_page()
 
 
 
@@ -241,21 +402,30 @@ cell_size = 40
 cell_number = 20
 screen = pygame.display.set_mode(
     (cell_size*cell_number, cell_size*cell_number))
+     
 clock = pygame.time.Clock()
 apple = pygame.image.load('Graphics/apple.png').convert_alpha()
 snake_png = pygame.image.load('Graphics/snake.png').convert_alpha()
-game_font = pygame.font.Font('Movement.ttf', 30)
-
+game_font = pygame.font.Font('SourceSansPro-SemiBold.ttf', 30)
+user_text =''
 
 main_game = MAIN()
 game_state = Gamestate()
+# maths =Math()
+
 
 SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE, 150)
 
 
+
+
 while True:
 
     game_state.state_manger()
+    
+
 
     clock.tick(60)
+
+    
