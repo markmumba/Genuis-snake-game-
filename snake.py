@@ -338,10 +338,12 @@ class Gamestate:
 
 
     def math_page(self):
-        question1="GCD of 4 and 18 ="
-        answer1 = "2"  
+        i = random.randint(1, 120)
+        question1=mathgen.genById(i)
         user_text = ''
         x=[]
+        input_rect = pygame.Rect(300,300,140,32)
+        color = pygame.Color('black')
         def string():
             return "".join(x)
         answering = True 
@@ -376,15 +378,21 @@ class Gamestate:
             
             screen.fill((175, 215, 70))
             #input field 
-            
             text_surface = game_font.render(user_text ,True,(0,0,0))
             screen.blit(text_surface,(300,300))
+
+            # rectangle for input 
+            pygame.draw.rect(screen,color,input_rect,2)
+            input_rect.w = max(100,text_surface.get_width() + 10)
             
             #question to appear
-            question = question1
-            answer = answer1
+            question = str(question1[0])
+            print(question)
+            answer = str(question1[1])
+            print(answer)
             question_surface = game_font.render(question, True, (0,0,0))
             screen.blit(question_surface, (200,200))
+          
             pygame.display.update() 
 
             
