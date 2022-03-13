@@ -3,6 +3,7 @@ import sys
 import random
 from pygame.math import Vector2
 from mathgenerator import mathgen
+import textwrap
 
 
 
@@ -216,41 +217,33 @@ class MAIN:
 
 
 
-# class Math:
-#     def  __int__(self):
-#         self.generate_questions()
+class Math:
+
+    textvars = {'large':[90,22,90], 'medium':[50,43,45], 'normal':[25,88,20], 'small':[15,148,10]}
+
+    def  __int__(self):
+        self.generate_questions()
+
+    def wrap_text(self,message, wraplimit):
+        return textwrap.fill(message, wraplimit)
+
+    def message_display(myfont, textvars, color, xy, wrap, message):
+        xy = xy[:] # so we won't modify the original values
+        font_object = pygame.font.Font(myfont,textvars[0])
+        message = wrap_text(message,textvars[1])
+        for part in message.split('\n'):
+            rendered_text = font_object.render(part, True, (color))
+            screen.blit(rendered_text,(xy))
+            xy[1] += textvars[2]
+            pygame.display.update()
+
+
   
-
-#     def generate_questions(self):
-#         x  = [23,10,26,50,7,110,62,40]
-#         lst = []
-#         for _ in range(100):
-#             for i in x:
-#                 question= mathgen.genById(i)
-#                 lst.append(question)
-#         return lst 
-
-#     def get_random_question(self):
-#         lst=self.generate_questions()
-#         random_question = random.choice(lst)
-#         return random_question
-
-#     def draw_question(self):
-#         question= self.get_random_question()[0]
-#         question_surface = game_font.render(question, True, (112,102,102))
-#         question_x =int((cell_size*cell_number/2 -250))
-#         question_y =int((cell_size*cell_number/2-100))
-#         screen.blit(question_surface,(question_x,question_y) )
         
 
   
 
 class Gamestate:
- 
-
-
-    
-
     def __init__(self):
         self.state= "intro"
 
@@ -342,10 +335,21 @@ class Gamestate:
         question1=mathgen.genById(i)
         user_text = ''
         x=[]
-        input_rect = pygame.Rect(300,300,140,32)
+        input_rect = pygame.Rect(50,350,140,32)
         color = pygame.Color('black')
+        #Function to  turn the list into string 
         def string():
             return "".join(x)
+
+        #function to wrap long question to fit in screen 
+        def wrap_text(text:str):
+            word_list = []
+            width = 30
+            wrapped_lines = textwrap.wrap(text ,width)
+            for  i  in wrapped_lines :
+                word_list.append(i)
+            return word_list 
+        #while loop to run when answering a question
         answering = True 
         while answering:
             for event in pygame.event.get():
@@ -379,8 +383,7 @@ class Gamestate:
             screen.fill((175, 215, 70))
             #input field 
             text_surface = game_font.render(user_text ,True,(0,0,0))
-            screen.blit(text_surface,(300,300))
-
+            screen.blit(text_surface,(50,350))
             # rectangle for input 
             pygame.draw.rect(screen,color,input_rect,2)
             input_rect.w = max(100,text_surface.get_width() + 10)
@@ -390,9 +393,22 @@ class Gamestate:
             print(question)
             answer = str(question1[1])
             print(answer)
-            question_surface = game_font.render(question, True, (0,0,0))
-            screen.blit(question_surface, (200,200))
-          
+
+            #Variables for the question page 
+            txtX, txtY = 50, 100
+            wraplen = 20
+            count = 0
+            max_length = 4
+        
+            wrap_list = wrap_text(question)
+            for i in wrap_list:
+                if count != max_length:
+                    txtY = txtY + 35
+                    Mtxt = game_font.render(f"{i}", True, (0, 0, 0))
+                    screen.blit(Mtxt, (txtX, txtY))
+                    count += 1
+
+
             pygame.display.update() 
 
             
@@ -425,7 +441,7 @@ screen = pygame.display.set_mode(
 clock = pygame.time.Clock()
 apple = pygame.image.load('Graphics/apple.png').convert_alpha()
 snake_png = pygame.image.load('Graphics/snake.png').convert_alpha()
-game_font = pygame.font.Font('SourceSansPro-SemiBold.ttf', 30)
+game_font = pygame.font.Font('SF-Pro-Display-Bold.otf', 30)
 user_text =''
 
 main_game = MAIN()
