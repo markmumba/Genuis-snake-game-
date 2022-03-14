@@ -4,6 +4,7 @@ import random
 from pygame.math import Vector2
 from mathgenerator import mathgen
 import textwrap
+import database_connection
 
 
 
@@ -362,10 +363,12 @@ class Gamestate:
 
                     if event.key == pygame.K_RETURN:
                         if str(x[-1])== answer:
+                            
                             answering = False
                             game_state.state = "main_game"
 
                         else: 
+                            database_connection.insert_scores(main_game.question_page())
                             game_state.state = "main_game"
                             answering = False
                             main_game.game_over()
