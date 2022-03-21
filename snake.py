@@ -4,6 +4,7 @@ import random
 from pygame.math import Vector2
 from mathgenerator import mathgen
 import textwrap
+import database_connection
 
 
 
@@ -155,12 +156,12 @@ class MAIN:
         
     
         
-
     def draw_elements(self):
         self.draw_grass()
         self.fruit.draw_fruit()
         self.snake.draw_snake()
         self.draw_score()
+        self.highest_score_data()
         self.pause_ins()
         
 
@@ -170,13 +171,17 @@ class MAIN:
             self.snake.add_block()
 
     def check_fail(self):
+       
         if not 0 <= self.snake.body[0].x < cell_number or not 0 <= self.snake.body[0].y < cell_number:
             self.game_over()
 
         for block in self.snake.body[1:]:
-            if block == self.snake.body[0]:
-                
+            if block == self.snake.body[0]: 
                 self.game_over()
+
+
+
+        
 
     def game_over(self):
         self.snake.reset()
@@ -208,8 +213,14 @@ class MAIN:
         pause_surface= game_font.render(pause_instructions, True, (0, 0, 0))
         pause_x=int((cell_size*cell_number)-770)
         pause_y=int((cell_size * cell_number)-770)
-
         screen.blit(pause_surface,(pause_x,pause_y))
+
+    def highest_score_data(self):
+        highest_score_data =f" highest score {database_connection.x[0]}"
+        highscore_surface = game_font.render(highest_score_data,True, (0,0,0))
+        high_x=int(0)
+        high_y=int(730)
+        screen.blit(highscore_surface,(high_x,high_y))
 
     def question_page(self):
         score = len(self.snake.body)-3 
@@ -217,28 +228,7 @@ class MAIN:
 
 
 
-class Math:
 
-    textvars = {'large':[90,22,90], 'medium':[50,43,45], 'normal':[25,88,20], 'small':[15,148,10]}
-
-    def  __int__(self):
-        self.generate_questions()
-
-    def wrap_text(self,message, wraplimit):
-        return textwrap.fill(message, wraplimit)
-
-    def message_display(myfont, textvars, color, xy, wrap, message):
-        xy = xy[:] # so we won't modify the original values
-        font_object = pygame.font.Font(myfont,textvars[0])
-        message = wrap_text(message,textvars[1])
-        for part in message.split('\n'):
-            rendered_text = font_object.render(part, True, (color))
-            screen.blit(rendered_text,(xy))
-            xy[1] += textvars[2]
-            pygame.display.update()
-
-
-  
         
 
   
@@ -271,6 +261,7 @@ class Gamestate:
     def main_game(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+               
                 pygame.quit()
                 sys.exit()
             if event.type == SCREEN_UPDATE:
@@ -289,18 +280,21 @@ class Gamestate:
                 if event.key == pygame.K_LEFT:
                     if main_game.snake.direction.x != -1:
                         main_game.snake.direction = Vector2(-1, 0)
-
+  
                 if event.key == pygame.K_p:
                     self.state ="pause"
-                
+
                 if main_game.question_page()>1 and main_game.question_page() % 5 == 0:
                     self.state = "question_page"
                     main_game.snake.add_block()
 
+           
+
+
+
 
         screen.fill((175, 215, 70))
         main_game.draw_elements()
-
         pygame.display.update()
       
 
@@ -330,12 +324,15 @@ class Gamestate:
             pygame.display.update() 
 
 
+
+
+  
     def math_page(self):
         i = random.randint(1, 120)
         question1=mathgen.genById(i)
         user_text = ''
         x=[]
-        input_rect = pygame.Rect(50,350,140,32)
+        input_rect = pygame.Rect(50,450,140,32)
         color = pygame.Color('black')
         #Function to  turn the list into string 
         def string():
@@ -362,10 +359,12 @@ class Gamestate:
 
                     if event.key == pygame.K_RETURN:
                         if str(x[-1])== answer:
+                            
                             answering = False
                             game_state.state = "main_game"
 
                         else: 
+                            database_connection.insert_scores(main_game.question_page())
                             game_state.state = "main_game"
                             answering = False
                             main_game.game_over()
@@ -383,7 +382,7 @@ class Gamestate:
             screen.fill((175, 215, 70))
             #input field 
             text_surface = game_font.render(user_text ,True,(0,0,0))
-            screen.blit(text_surface,(50,350))
+            screen.blit(text_surface,(50,450))
             # rectangle for input 
             pygame.draw.rect(screen,color,input_rect,2)
             input_rect.w = max(100,text_surface.get_width() + 10)
@@ -398,7 +397,7 @@ class Gamestate:
             txtX, txtY = 50, 100
             wraplen = 20
             count = 0
-            max_length = 4
+            max_length = 8
         
             wrap_list = wrap_text(question)
             for i in wrap_list:
